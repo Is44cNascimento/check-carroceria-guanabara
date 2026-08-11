@@ -1,0 +1,43 @@
+.inicio-container {
+  max-width: 420px;
+  margin: 24px auto;
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid #2f6dd5;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  font-weight: 700;
+}
+
+input {
+  border: 1px solid #c4c4c4;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+small {
+  color: #c60000;
+  margin-bottom: 8px;
+}
+
+button {
+  margin-top: 12px;
+  width: 120px;
+  height: 36px;
+  border: none;
+  border-radius: 18px;
+  color: #fff;
+  font-weight: 700;
+  background: #4b75d1;
+  cursor: pointer;
+  align-self: center;
+}
