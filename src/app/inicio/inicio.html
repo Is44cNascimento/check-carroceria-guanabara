@@ -3,14 +3,14 @@
     <label for="operatorName">Nome do operador</label>
     <input id="operatorName" type="text" formControlName="operatorName" />
 
-    <small *ngIf="form.controls.operatorName.touched && form.controls.operatorName.invalid">
+    <small *ngIf="form.controls['operatorName'].touched && form.controls['operatorName'].invalid">
       Informe o nome do operador.
     </small>
 
     <label for="carPrefix">Número/Prefixo do carro</label>
     <input id="carPrefix" type="text" formControlName="carPrefix" />
 
-    <small *ngIf="form.controls.carPrefix.touched && form.controls.carPrefix.invalid">
+    <small *ngIf="form.controls['carPrefix'].touched && form.controls['carPrefix'].invalid">
       Informe o prefixo do carro.
     </small>
 

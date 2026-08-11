@@ -7,6 +7,7 @@ import {
 import express, { Request, Response } from 'express';
 import { join } from 'node:path';
 import { Pool } from 'pg';
+import rateLimit from 'express-rate-limit';
 import 'zone.js/node';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
@@ -36,6 +37,7 @@ type SubmitChecklistBody = {
   carPrefix?: string;
   checklist?: ChecklistValue;
 };
+
 
 function normalizeText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
@@ -71,9 +73,17 @@ async function ensureDatabase(): Promise<void> {
   return initDbPromise;
 }
 
+const apiRateLimit = rateLimit({
+  windowMs: 60_000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Muitas requisições. Tente novamente em instantes.' }
+});
+
 app.use(express.json());
 
-app.post('/api/checklist/start', async (req: Request<{}, {}, StartChecklistBody>, res: Response) => {
+app.post('/api/checklist/start', apiRateLimit, async (req: Request<{}, {}, StartChecklistBody>, res: Response) => {
   try {
     await ensureDatabase();
 
@@ -101,7 +111,7 @@ app.post('/api/checklist/start', async (req: Request<{}, {}, StartChecklistBody>
   }
 });
 
-app.post('/api/checklist/submit', async (req: Request<{}, {}, SubmitChecklistBody>, res: Response) => {
+app.post('/api/checklist/submit', apiRateLimit, async (req: Request<{}, {}, SubmitChecklistBody>, res: Response) => {
   try {
     await ensureDatabase();
 

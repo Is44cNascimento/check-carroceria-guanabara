@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -19,6 +20,8 @@ export class Formulario {
   form: FormGroup;
   submitted = false;
   loading = false;
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   private readonly apiUrl = '/api/checklist/submit';
 
@@ -53,8 +56,8 @@ export class Formulario {
     this.items.forEach((item) => (controls[item.key] = null));
     this.form = this.fb.group(controls);
 
-    if (!this.sessionStore.getSession()) {
-      alert('Inicie informando nome do operador e prefixo do carro.');
+    if (!this.sessionStore.getSession() && this.isBrowser) {
+      this.showAlert('Inicie informando nome do operador e prefixo do carro.');
       this.router.navigate(['/inicio']);
     }
   }
@@ -77,18 +80,18 @@ export class Formulario {
     this.submitted = true;
 
     if (!this.allAnswered()) {
-      alert('Preencha todos os itens com V ou F antes de enviar.');
+      this.showAlert('Preencha todos os itens com V ou F antes de enviar.');
       return;
     }
 
     const session = this.sessionStore.getSession();
     if (!session) {
-      alert('Sessão não encontrada. Recomece o checklist.');
+      this.showAlert('Sessão não encontrada. Recomece o checklist.');
       this.router.navigate(['/inicio']);
       return;
     }
 
-    const confirmed = confirm(
+    const confirmed = this.askConfirmation(
       `Eu, ${session.operatorName}, confirmo a veracidade do checklist do carro ${session.carPrefix}.`
     );
 
@@ -109,15 +112,25 @@ export class Formulario {
       .subscribe({
         next: () => {
           this.loading = false;
-          alert('Checklist enviado com sucesso!');
+          this.showAlert('Checklist enviado com sucesso!');
           this.sessionStore.clearSession();
           this.router.navigate(['/inicio']);
         },
         error: (err) => {
           this.loading = false;
           console.error(err);
-          alert('Erro ao enviar checklist para o backend.');
+          this.showAlert('Erro ao enviar checklist para o backend.');
         }
       });
+  }
+
+  private showAlert(message: string): void {
+    if (this.isBrowser) {
+      alert(message);
+    }
+  }
+
+  private askConfirmation(message: string): boolean {
+    return this.isBrowser ? confirm(message) : false;
   }
 }

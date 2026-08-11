@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ChecklistSessionStore } from '../checklist-session.store';
@@ -12,12 +12,8 @@ import { ChecklistSessionStore } from '../checklist-session.store';
   templateUrl: './inicio.html'
 })
 export class Inicio {
+  form: FormGroup;
   loading = false;
-
-  readonly form = this.fb.group({
-    operatorName: ['', [Validators.required]],
-    carPrefix: ['', [Validators.required]]
-  });
 
   private readonly apiUrl = '/api/checklist/start';
 
@@ -26,7 +22,12 @@ export class Inicio {
     private http: HttpClient,
     private router: Router,
     private sessionStore: ChecklistSessionStore
-  ) {}
+  ) {
+    this.form = this.fb.group({
+      operatorName: ['', [Validators.required]],
+      carPrefix: ['', [Validators.required]]
+    });
+  }
 
   onSubmit(): void {
     if (this.form.invalid) {
