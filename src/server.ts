@@ -58,16 +58,24 @@ function isChecklistValue(value: unknown): value is ChecklistValue {
 
 async function ensureDatabase(): Promise<void> {
   if (!initDbPromise) {
-    initDbPromise = pool.query(`
-      CREATE TABLE IF NOT EXISTS checklist_submissions (
-        id BIGSERIAL PRIMARY KEY,
-        operator_name TEXT NOT NULL,
-        car_prefix TEXT NOT NULL,
-        checklist JSONB,
-        started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        completed_at TIMESTAMPTZ
-      )
-    `).then(() => undefined);
+    initDbPromise = (async () => {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS checklist_submissions (
+          id BIGSERIAL PRIMARY KEY,
+          operator_name TEXT NOT NULL,
+          car_prefix TEXT NOT NULL,
+          checklist JSONB,
+          started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          submitted_at TIMESTAMPTZ,
+          completed_at TIMESTAMPTZ
+        )
+      `);
+
+      await pool.query(`
+        ALTER TABLE checklist_submissions
+        ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ
+      `);
+    })();
   }
 
   return initDbPromise;
@@ -138,13 +146,14 @@ app.post('/api/checklist/submit', apiRateLimit, async (req: Request<{}, {}, Subm
     const result = await pool.query(
       `
       UPDATE checklist_submissions
-      SET checklist = $1::jsonb,
+      SET operator_name = $1,
+          car_prefix = $2,
+          checklist = $3::jsonb,
+          submitted_at = NOW(),
           completed_at = NOW()
-      WHERE id = $2
-        AND operator_name = $3
-        AND car_prefix = $4
+      WHERE id = $4
       `,
-      [JSON.stringify(checklist), sessionId, operatorName, carPrefix]
+      [operatorName, carPrefix, JSON.stringify(checklist), sessionId]
     );
 
     if (result.rowCount === 0) {
