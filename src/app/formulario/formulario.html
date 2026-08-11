@@ -1,4 +1,8 @@
 <div class="checklist-container">
+  <div class="session-info" *ngIf="sessionStore.getSession() as session">
+    Operador: <strong>{{ session.operatorName }}</strong> | Carro: <strong>{{ session.carPrefix }}</strong>
+  </div>
+
   <form [formGroup]="form" (ngSubmit)="onSubmit($event)">
     <div class="header-row">
       <div></div>
@@ -9,21 +13,11 @@
     <div class="item-row" *ngFor="let item of items">
       <label>{{ item.label }}</label>
 
-      <input
-        type="checkbox"
-        [checked]="isChecked(item.key, true)"
-        (change)="onToggle(item.key, true)"
-      />
+      <input type="checkbox" [checked]="isChecked(item.key, true)" (change)="onToggle(item.key, true)" />
 
-      <input
-        type="checkbox"
-        [checked]="isChecked(item.key, false)"
-        (change)="onToggle(item.key, false)"
-      />
+      <input type="checkbox" [checked]="isChecked(item.key, false)" (change)="onToggle(item.key, false)" />
 
-      <small class="erro" *ngIf="submitted && form.get(item.key)?.value === null">
-        obrigatório
-      </small>
+      <small class="erro" *ngIf="submitted && form.get(item.key)?.value === null"> obrigatório </small>
     </div>
 
     <button type="submit" [disabled]="loading">

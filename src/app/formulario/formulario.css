@@ -8,6 +8,14 @@
   box-sizing: border-box;
 }
 
+.session-info {
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #f1f5ff;
+  font-size: 13px;
+}
+
 .header-row,
 .item-row {
   display: grid;
@@ -40,7 +48,7 @@
   line-height: 1.2;
 }
 
-input[type="radio"] {
+input[type='checkbox'] {
   width: 18px;
   height: 18px;
   justify-self: center;

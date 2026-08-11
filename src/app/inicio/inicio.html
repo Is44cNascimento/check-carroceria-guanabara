@@ -1,17 +1,21 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Document</title>
-</head>
-<body>
+<div class="inicio-container">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <label for="operatorName">Nome do operador</label>
+    <input id="operatorName" type="text" formControlName="operatorName" />
 
+    <small *ngIf="form.controls.operatorName.touched && form.controls.operatorName.invalid">
+      Informe o nome do operador.
+    </small>
 
-<button routerLink="/Formulario">Enviar</button>
-</body>
-</html>
+    <label for="carPrefix">Número/Prefixo do carro</label>
+    <input id="carPrefix" type="text" formControlName="carPrefix" />
 
-<router-outlet/>
+    <small *ngIf="form.controls.carPrefix.touched && form.controls.carPrefix.invalid">
+      Informe o prefixo do carro.
+    </small>
 
-
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'ENVIANDO...' : 'ENVIAR' }}
+    </button>
+  </form>
+</div>

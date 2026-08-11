@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { ChecklistSessionStore } from '../checklist-session.store';
 
 type ChecklistItem = { key: string; label: string };
 type ChecklistValue = boolean | null;
@@ -18,8 +20,7 @@ export class Formulario {
   submitted = false;
   loading = false;
 
-  // URL do endpoint Spring Boot
-  private readonly apiUrl = 'http://localhost:8080/api/checklist';
+  private readonly apiUrl = '/api/checklist/submit';
 
   items: ChecklistItem[] = [
     { key: 'faroisBaixos', label: 'Faróis baixos' },
@@ -42,52 +43,81 @@ export class Formulario {
     { key: 'carroceriaDanos', label: 'Carroceria sem danos aparentes' }
   ];
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private router: Router,
+    public sessionStore: ChecklistSessionStore
+  ) {
     const controls: Record<string, ChecklistValue> = {};
-    this.items.forEach(item => (controls[item.key] = null));
+    this.items.forEach((item) => (controls[item.key] = null));
     this.form = this.fb.group(controls);
+
+    if (!this.sessionStore.getSession()) {
+      alert('Inicie informando nome do operador e prefixo do carro.');
+      this.router.navigate(['/inicio']);
+    }
   }
 
   isChecked(key: string, option: boolean): boolean {
     return this.form.get(key)?.value === option;
   }
 
-  // Só 1 opção por linha e pode desmarcar clicando de novo
   onToggle(key: string, option: boolean): void {
     const current = this.form.get(key)?.value as ChecklistValue;
     this.form.get(key)?.setValue(current === option ? null : option);
   }
 
   private allAnswered(): boolean {
-    return this.items.every(item => this.form.get(item.key)?.value !== null);
+    return this.items.every((item) => this.form.get(item.key)?.value !== null);
   }
 
   onSubmit(event?: Event): void {
-  // impede comportamento padrão do navegador (recarregar)
-  event?.preventDefault();
+    event?.preventDefault();
+    this.submitted = true;
 
-  this.submitted = true;
-
-  if (!this.allAnswered()) {
-    alert('Preencha todos os itens com V ou F antes de enviar.');
-    return; // mantém tela como está
-  }
-
-  const payload = this.form.value as Record<string, boolean>;
-  this.loading = true;
-
-  this.http.post(this.apiUrl, payload).subscribe({
-    next: () => {
-      this.loading = false;
-      alert('Checklist enviado com sucesso!');
-      // não recarrega e não limpa, mantém como está
-    },
-    error: (err) => {
-      this.loading = false;
-      console.error(err);
-      alert('Erro ao enviar para o backend Spring.');
-      // mantém exatamente o estado atual
+    if (!this.allAnswered()) {
+      alert('Preencha todos os itens com V ou F antes de enviar.');
+      return;
     }
-  });
-}
+
+    const session = this.sessionStore.getSession();
+    if (!session) {
+      alert('Sessão não encontrada. Recomece o checklist.');
+      this.router.navigate(['/inicio']);
+      return;
+    }
+
+    const confirmed = confirm(
+      `Eu, ${session.operatorName}, confirmo a veracidade do checklist do carro ${session.carPrefix}.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const checklist = this.form.value as Record<string, boolean>;
+
+    this.loading = true;
+    this.http
+      .post(this.apiUrl, {
+        sessionId: session.sessionId,
+        operatorName: session.operatorName,
+        carPrefix: session.carPrefix,
+        checklist
+      })
+      .subscribe({
+        next: () => {
+          this.loading = false;
+          alert('Checklist enviado com sucesso!');
+          this.sessionStore.clearSession();
+          this.router.navigate(['/inicio']);
+        },
+        error: (err) => {
+          this.loading = false;
+          console.error(err);
+          alert('Erro ao enviar checklist para o backend.');
+        }
+      });
+  }
 }

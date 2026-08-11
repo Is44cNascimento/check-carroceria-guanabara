@@ -1,15 +1,20 @@
-div {
-background-color: rgba(0, 0, 242, 0.931);
-background-size: var(-4px, 30px);
-display: flex;
-justify-content: center;
-align-items: center;
-
-
+.logo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
 }
 
-div img{
-    width: 85%;
-  height: 85%;
-  object-fit: cover;
+.logo-wrapper img {
+  width: 220px;
+  max-width: 90%;
+  height: auto;
+}
+
+.logo-wrapper h1 {
+  margin: 0;
+  color: #2f6dd5;
+  font-size: 18px;
+  text-align: center;
 }
