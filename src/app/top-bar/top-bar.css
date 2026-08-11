@@ -1,0 +1,15 @@
+div {
+background-color: rgba(0, 0, 242, 0.931);
+background-size: var(-4px, 30px);
+display: flex;
+justify-content: center;
+align-items: center;
+
+
+}
+
+div img{
+    width: 85%;
+  height: 85%;
+  object-fit: cover;
+}
