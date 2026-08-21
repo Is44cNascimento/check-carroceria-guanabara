@@ -1,3 +1,8 @@
+#V2 CheckList
+
+Nessa versão foi implementado o docker
+
+
 # Frontend
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.19.
