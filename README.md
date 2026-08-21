@@ -1,4 +1,8 @@
-#V2 CheckList
+# V2 CheckList
+
+Install Docker Desktop
+
+https://docs.docker.com/desktop/setup/install/linux/fedora/
 
 Nessa versão foi implementado o docker
 
